@@ -1293,7 +1293,7 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
                      "bit_field_name", GetBitFieldName(i));
     }
 
-    //immutable fields splitted inside
+    //immutable fields split inside
     printer->Print("done = parse_immutable_fields_0(input, extensionRegistry, unknownFields, tag);\n");
   }
   printer->Outdent();

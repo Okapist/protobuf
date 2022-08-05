@@ -425,7 +425,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
   int totalBuilderBits = 0;
   int totalMessageBits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    const ImmutableFieldGenerator &field =
+    const ImmutableFieldGenerator& field =
             field_generators_.get(descriptor_->field(i));
     totalBuilderBits += field.GetNumBitsForBuilder();
     totalMessageBits += field.GetNumBitsForMessage();
