@@ -54,10 +54,10 @@ void GenerateSerializeExtensionRange(io::Printer* printer,
 //
 // Templatized to support different field generator implementations.
 template <typename FieldGenerator>
-void GenerateSerializeFieldsAndExtensions(
-    io::Printer* printer,
-    const FieldGeneratorMap<FieldGenerator>& field_generators,
-    const Descriptor* descriptor, const FieldDescriptor** sorted_fields) {
+  void
+  GenerateSerializeFieldsAndExtensions(io::Printer *printer, const FieldGeneratorMap <FieldGenerator> &field_generators,
+                                       const Descriptor *descriptor, const FieldDescriptor **sorted_fields,
+                                       std::map<std::string, std::string> variables) {
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   sorted_extensions.reserve(descriptor->extension_range_count());
   for (int i = 0; i < descriptor->extension_range_count(); ++i) {
@@ -65,6 +65,9 @@ void GenerateSerializeFieldsAndExtensions(
   }
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeOrdering());
+
+  int fields_in_function = 0;
+  int method_num = 1;
 
   // Merge the fields and the extension ranges, both sorted by field number.
   for (int i = 0, j = 0;
@@ -80,6 +83,22 @@ void GenerateSerializeFieldsAndExtensions(
     } else {
       GenerateSerializeExtensionRange(printer, sorted_extensions[j++]);
     }
+
+    if (descriptor->extension_range_count() > 0) {
+      MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                           "_writeTo_autosplit_$method_num$(output, extensionWriter);\n",
+                           "private void _writeTo_autosplit_$method_num$(com.google.protobuf.CodedOutputStream output,"
+                           "com.google.protobuf.GeneratedMessage$ver$.ExtendableMessage<$classname$>.ExtensionWriter extensionWriter) \n"
+                           " throws java.io.IOException {\n",
+                           variables);
+    } else {
+      MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                           "_writeTo_autosplit_$method_num$(output);\n",
+                           "private void _writeTo_autosplit_$method_num$(com.google.protobuf.CodedOutputStream output) \n"
+                           " throws java.io.IOException {\n",
+                           variables);
+    }
+    fields_in_function++;
   }
 }
 
