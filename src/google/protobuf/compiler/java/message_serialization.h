@@ -69,17 +69,16 @@ template <typename FieldGenerator>
 
   int fields_in_function = 0;
   int method_num = 1;
-
   std::size_t range_idx = 0;
 
   // Merge the fields and the extension ranges, both sorted by field number.
   for (int i = 0; i < descriptor->field_count(); ++i) {
-    const FieldDescriptor* field = sorted_fields[i];
+    const FieldDescriptor *field = sorted_fields[i];
 
     // Collapse all extension ranges up until the next field. This leads to
     // shorter and more efficient codegen for messages containing a large
     // number of extension ranges without fields in between them.
-    const Descriptor::ExtensionRange* range = nullptr;
+    const Descriptor::ExtensionRange *range = nullptr;
     while (range_idx < sorted_extensions.size() &&
            sorted_extensions[range_idx]->end <= field->number()) {
       range = sorted_extensions[range_idx++];
@@ -89,12 +88,6 @@ template <typename FieldGenerator>
       GenerateSerializeExtensionRange(printer, range);
     }
     field_generators.get(field).GenerateSerializationCode(printer);
-  }
-
-  // After serializing all fields, serialize any remaining extensions via a
-  // single writeUntil call.
-  if (range_idx < sorted_extensions.size()) {
-    GenerateSerializeExtensionRange(printer, sorted_extensions.back());
 
     if (descriptor->extension_range_count() > 0) {
       MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
@@ -111,6 +104,12 @@ template <typename FieldGenerator>
                            variables);
     }
     fields_in_function++;
+  }
+
+  // After serializing all fields, serialize any remaining extensions via a
+  // single writeUntil call.
+  if (range_idx < sorted_extensions.size()) {
+    GenerateSerializeExtensionRange(printer, sorted_extensions.back());
   }
 }
 
